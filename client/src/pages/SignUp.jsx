@@ -68,7 +68,7 @@ export default function SignUp() {
           className="my-2 p-3 border rounded-lg"
         />
         <button
-          // disabled={loading}
+          disabled={loading}
           className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70"
         >
           {loading ? "loading......" : "Sign Up"}
@@ -83,7 +83,7 @@ export default function SignUp() {
           <span className="text-blue-700">Sign in</span>
         </Link>
       </div>
-      {error && <p>{error}</p>}
+      {error && <p className="text-center text-red-500">{error}</p>}
     </div>
   );
 }
