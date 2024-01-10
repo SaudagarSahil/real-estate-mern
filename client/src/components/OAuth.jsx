@@ -22,7 +22,7 @@ export default function OAuth() {
                 },
                 body : JSON.stringify({username : result.user.displayName, email: result.user.email, imageURL: result.user.photoURL})
             });
-            const data = res.json();
+            const data = await res.json();
             dispatch(signinSuccess(data));
             navigate('/profile');
         } catch (error) {
