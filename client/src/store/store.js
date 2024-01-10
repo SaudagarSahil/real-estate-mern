@@ -3,6 +3,6 @@ import signinReducer from './user/slice.js';
 
 export const store = configureStore({
     reducer: {
-        signin : signinReducer,
+        user : signinReducer,
     }
 })

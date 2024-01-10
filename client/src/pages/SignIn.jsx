@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux'
 import { signinFail, signinStart, signinSuccess } from "../store/user/slice.js";
+import OAuth from "../components/OAuth.jsx";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({});
@@ -10,7 +11,7 @@ export default function SignIn() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const {error, loading} = useSelector((state) => state.signin);
+  const {error, loading} = useSelector((state) => state.user);
 
   const inputHandler = (e) => {
     setFormData({
@@ -35,6 +36,7 @@ export default function SignIn() {
         dispatch(signinFail(data.message));
         return;
       }
+      console.log(data);
       dispatch(signinSuccess(data));
       navigate('/home');
     } catch (error) {
@@ -68,9 +70,7 @@ export default function SignIn() {
         >
           {loading ? "loading......" : "Sign In"}
         </button>
-        <button className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70">
-          Sign In with Google
-        </button>
+        <OAuth/>
       </form>
       <div className="flex gap-2 justify-center">
         <p>Dont have an account?</p>
