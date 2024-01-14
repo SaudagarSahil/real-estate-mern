@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { app } from "../firebase.js";
+import { updateFail, updateStart, updateSuccess } from "../store/user/slice.js";
 import {
   getDownloadURL,
   getStorage,
@@ -15,17 +16,25 @@ export default function Profile() {
   const [filePerc, setFilePerc] = useState(0);
   const [formData, setFormData] = useState({});
   const [fileUploadError, setFileUploadError] = useState(null);
+  const [updateSuccessMsg, setUpdateSuccessMsg]  = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const fileRef = useRef(null);
-  console.log(file);
-  console.log(filePerc);
-  console.log(formData);
+  const { error, loading } = useSelector((state) => state.user);
+  // console.log(file);
+  // console.log(filePerc);
+  // console.log(formData);
+  // console.log(error);
 
   useEffect(() => {
     if (file) {
       handleFileUpload(file);
     }
   }, [file]);
+
+  const inputHandler = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
@@ -50,10 +59,34 @@ export default function Profile() {
     );
   };
 
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      console.log(data);
+      if (data.success === false) {
+        dispatch(updateFail(data.message));
+        return;
+      }
+      dispatch(updateSuccess(data));
+      setUpdateSuccessMsg("User Data Updated Successfully!")
+    } catch (error) {
+      dispatch(updateFail(error));
+    }
+  };
+
   return (
     <div className="my-5 max-w-lg m-auto">
       <div className="font-semibold text-center text-3xl">Profile</div>
-      <form className="flex flex-col p-5">
+      <form onSubmit={submitHandler} className="flex flex-col p-5">
         <input
           type="file"
           onChange={(e) => setFile(e.target.files[0])}
@@ -78,14 +111,32 @@ export default function Profile() {
             ""
           )}
         </p>
-        <div className="my-2 p-2 rounded-lg bg-purple-200 text-red">
-          {currentUser.username}
-        </div>
-        <div className="my-2 p-2 rounded-lg bg-purple-200 text-red">
-          {currentUser.email}
-        </div>
-        <button className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70">
-          Update
+        <input
+          onChange={inputHandler}
+          defaultValue={currentUser.username}
+          placeholder="username"
+          type="text"
+          id="username"
+          className="my-2 p-3 border rounded-lg"
+        />
+        <input
+          onChange={inputHandler}
+          defaultValue={currentUser.email}
+          placeholder="email"
+          type="text"
+          id="email"
+          className="my-2 p-3 border rounded-lg"
+        />
+        <input
+          onChange={inputHandler}
+          defaultValue={currentUser.password}
+          placeholder="password"
+          type="password"
+          id="password"
+          className="my-2 p-3 border rounded-lg"
+        />
+        <button disabled={loading} className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70">
+          {loading? 'loading...' : 'update'}
         </button>
         {/* <button className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70">
           Create Shifting
@@ -102,7 +153,8 @@ export default function Profile() {
           </span>
         </div>
       </form>
-      {/* {error && <p className="text-center text-red-500">{error}</p>} */}
+      {error && <p className="text-center text-red-500">{error}</p>}
+      {updateSuccessMsg && <p className="text-center text-green-800">{updateSuccessMsg}</p>}
     </div>
   );
 }
