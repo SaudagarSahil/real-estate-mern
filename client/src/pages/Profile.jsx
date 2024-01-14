@@ -67,13 +67,13 @@ export default function Profile() {
           src={formData.avatar || currentUser.avatar}
           alt="Profile-Pic"
         />
-        <p className="self-center">
+        <p className="text-sm self-center">
           {fileUploadError ? (
-            <span>Error Image Upload</span>
+            <span className="text-red-800">Error Image Upload</span>
           ) : filePerc > 0 && filePerc < 100 ? (
             <span>{`uploading ${filePerc}%`}</span>
           ) : filePerc == 100 ? (
-            <span>Success</span>
+            <span className="text-green-800">Image Successfully Uploaded</span>
           ) : (
             ""
           )}
