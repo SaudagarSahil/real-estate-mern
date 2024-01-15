@@ -2,7 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { app } from "../firebase.js";
-import { deleteFail, deleteStart, deleteSuccess, updateFail, updateStart, updateSuccess } from "../store/user/slice.js";
+import {
+  deleteFail,
+  deleteStart,
+  deleteSuccess,
+  signoutFail,
+  signoutStart,
+  signoutSuccess,
+  updateFail,
+  updateStart,
+  updateSuccess,
+} from "../store/user/slice.js";
 import {
   getDownloadURL,
   getStorage,
@@ -16,7 +26,7 @@ export default function Profile() {
   const [filePerc, setFilePerc] = useState(0);
   const [formData, setFormData] = useState({});
   const [fileUploadError, setFileUploadError] = useState(null);
-  const [updateSuccessMsg, setUpdateSuccessMsg]  = useState('');
+  const [updateSuccessMsg, setUpdateSuccessMsg] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const fileRef = useRef(null);
@@ -66,7 +76,7 @@ export default function Profile() {
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: "POST",
         headers: {
-          "Content-Type": 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -77,25 +87,44 @@ export default function Profile() {
         return;
       }
       dispatch(updateSuccess(data));
-      setUpdateSuccessMsg("User Data Updated Successfully!")
+      setUpdateSuccessMsg("User Data Updated Successfully!");
     } catch (error) {
       dispatch(updateFail(error));
     }
   };
 
   const deleteHandler = async () => {
-    dispatch(deleteStart());
-    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-      method : 'DELETE',
-    })
-    const data = res.json();
-    if(data.success === false) { 
-      dispatch(deleteFail(data.message));
-      return;
+    try {
+      dispatch(deleteStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteFail(data.message));
+        return;
+      }
+      // console.log("User Deleted Successfully");
+      dispatch(deleteSuccess());
+    } catch (error) {
+      dispatch(deleteFail(error));      
     }
-    // console.log("User Deleted Successfully");
-    dispatch(deleteSuccess());
-  }
+  };
+
+  const signoutHandler = async () => {
+    try {
+      dispatch(signoutStart());
+      const res = await fetch('/api/auth/signout');
+      const data = await res.json();
+      if(data.success == false) {
+        dispatch(signoutFail(data.message));
+        return;
+      }
+      dispatch(signoutSuccess());
+    } catch (error) {
+      dispatch(signoutFail(error));
+    }
+  };
 
   return (
     <div className="my-5 max-w-lg m-auto">
@@ -149,26 +178,31 @@ export default function Profile() {
           id="password"
           className="my-2 p-3 border rounded-lg"
         />
-        <button disabled={loading} className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70">
-          {loading? 'loading...' : 'update'}
+        <button
+          disabled={loading}
+          className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70"
+        >
+          {loading ? "loading..." : "update"}
         </button>
         {/* <button className="my-2 p-2 rounded-lg bg-slate-600 text-white uppercase hover:opacity-90 disabled:opacity-70">
           Create Shifting
         </button> */}
         <div className="flex justify-between">
-          <span onClick={deleteHandler} className="cursor-pointer text-red-600">Delete Account</span>
+          <span onClick={deleteHandler} className="cursor-pointer text-red-600">
+            Delete Account
+          </span>
           <span
             className="cursor-pointer text-red-600"
-            onClick={() => {
-              navigate("/sign-in");
-            }}
+            onClick={signoutHandler}
           >
             Sign Out
           </span>
         </div>
       </form>
       {error && <p className="text-center text-red-500">{error}</p>}
-      {updateSuccessMsg && <p className="text-center text-green-800">{updateSuccessMsg}</p>}
+      {updateSuccessMsg && (
+        <p className="text-center text-green-800">{updateSuccessMsg}</p>
+      )}
     </div>
   );
 }
