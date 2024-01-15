@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { app } from "../firebase.js";
-import { updateFail, updateStart, updateSuccess } from "../store/user/slice.js";
+import { deleteFail, deleteStart, deleteSuccess, updateFail, updateStart, updateSuccess } from "../store/user/slice.js";
 import {
   getDownloadURL,
   getStorage,
@@ -83,6 +83,20 @@ export default function Profile() {
     }
   };
 
+  const deleteHandler = async () => {
+    dispatch(deleteStart());
+    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+      method : 'DELETE',
+    })
+    const data = res.json();
+    if(data.success === false) { 
+      dispatch(deleteFail(data.message));
+      return;
+    }
+    // console.log("User Deleted Successfully");
+    dispatch(deleteSuccess());
+  }
+
   return (
     <div className="my-5 max-w-lg m-auto">
       <div className="font-semibold text-center text-3xl">Profile</div>
@@ -142,7 +156,7 @@ export default function Profile() {
           Create Shifting
         </button> */}
         <div className="flex justify-between">
-          <span className="cursor-pointer text-red-600">Delete Account</span>
+          <span onClick={deleteHandler} className="cursor-pointer text-red-600">Delete Account</span>
           <span
             className="cursor-pointer text-red-600"
             onClick={() => {

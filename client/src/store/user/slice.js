@@ -33,10 +33,22 @@ export const signinSlice = createSlice({
         updateFail : (state, action) => {
             state.error = action.payload;
             state.loading = false;
-        }
+        },
+        deleteStart : (state) => {
+            state.loading = true;
+        },
+        deleteSuccess : (state) => {
+            state.currentUser = null;
+            state.error = null;
+            state.loading = false;
+        },
+        deleteFail : (state, action) => {
+            state.error = action.payload;
+            state.loading = false;
+        },
     }
 });
 
-export const {signinStart, signinSuccess, signinFail, updateStart, updateSuccess, updateFail} = signinSlice.actions;
+export const {signinStart, signinSuccess, signinFail, updateStart, updateSuccess, updateFail, deleteStart, deleteSuccess, deleteFail} = signinSlice.actions;
 
 export default signinSlice.reducer;
