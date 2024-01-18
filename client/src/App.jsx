@@ -23,7 +23,9 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/profile" element={<Profile />} />
           </Route>
-          <Route path="/create-listing" element={<CreateListing />} />
+          {/* <Route element={<PrivateRoute />}> */}
+            <Route path="/create-listing" element={<CreateListing />} />
+          {/* </Route> */}
           <Route path="/about" element={<About />} />
         </Routes>
       </BrowserRouter>

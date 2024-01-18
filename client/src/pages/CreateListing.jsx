@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { app } from "../firebase.js";
+import { useSelector } from 'react-redux';
+import {useNavigate } from 'react-router-dom';
 import {
   getDownloadURL,
   getStorage,
@@ -10,14 +12,16 @@ import {
 export default function CreateListing() {
   const [files, setfiles] = useState([]);
   const [imageUploadError, setImageUploadError] = useState(null);
+  const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     address: "",
     type: "rent",
     regularPrice: 0,
-    discountedPrice: 0,
+    discountedPrice : '',
     bedrooms: 1,
     bathrooms: 1,
     offer: false,
@@ -27,6 +31,9 @@ export default function CreateListing() {
   });
   console.log(files);
   console.log(formData);
+
+  const {currentUser} = useSelector(state => state.user);
+  const navigate = useNavigate();
 
   const inputHandler = (e) => {
     if (e.target.id === "sell" || e.target.id === "rent") {
@@ -59,7 +66,7 @@ export default function CreateListing() {
 
   const imageUploadHandler = (e) => {
     if (files.length > 0 && files.length + formData.imageURLs.length < 7) {
-      setLoading(true);
+      setImageUploadLoading(true);
       const promises = [];
       for (let i = 0; i < files.length; i++) {
         promises.push(storeImage(files[i]));
@@ -72,11 +79,11 @@ export default function CreateListing() {
           });
           setImageUploadError(null);
           // console.log("all promises done");
-          setLoading(false);
+          setImageUploadLoading(false);
         })
         .catch((error) => {
           setImageUploadError("Image Upload Failed");
-          setLoading(false);
+          setImageUploadLoading(false);
         });
     } else {
       setImageUploadError("Only 6 images allowed per Listing");
@@ -111,18 +118,43 @@ export default function CreateListing() {
 
   const imageDeleteHandler = (index) => {
     setFormData({
-      ...formData, imageURLs : formData.imageURLs.filter((_, i) => i != index)
-    })
-  }
+      ...formData,
+      imageURLs: formData.imageURLs.filter((_, i) => i != index),
+    });
+  };
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
+    try {
+      if(formData.imageURLs.length < 1) return setError("At least 1 image should be uploaded");
+      setError(false);
+      setLoading(true);
+      const res = await fetch("/api/listing/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          userRef : currentUser._id,
+        }),
+      });
+      const data = await res.json();
+      setLoading(false);
+      if (data.success === false) {
+        setError(data.message);
+        return;
+      }
+      navigate(`/listing/${currentUser._id}`);
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
     <main className="max-w-4xl m-auto p-5">
       <h1 className="text-center text-4xl font-semibold">Create a Listing</h1>
-      <form className="flex flex-col sm:flex-row p-5">
+      <form onSubmit={submitHandler} className="flex flex-col sm:flex-row p-5">
         <div className="flex flex-col flex-1 p-3">
           <input
             onChange={inputHandler}
@@ -150,11 +182,11 @@ export default function CreateListing() {
           />
           <div className="flex gap-7 flex-wrap">
             <div className="flex gap-2">
-              <input onChange={inputHandler} type="checkbox" id="sell" />
+              <input onChange={inputHandler} type="checkbox" checked={formData.type === 'sell'} id="sell" />
               <span>Sell</span>
             </div>
             <div className="flex gap-2">
-              <input onChange={inputHandler} type="checkbox" id="rent" />
+              <input onChange={inputHandler} type="checkbox" checked={formData.type === 'rent'} id="rent" />
               <span>Rent</span>
             </div>
             <div className="flex gap-2">
@@ -207,22 +239,23 @@ export default function CreateListing() {
               />
               <div className="flex flex-col">
                 <span>Regular Price</span>
-                <span>(₹ / month)</span>
+                <span hidden={formData.type === 'sell'}>(₹ / month)</span>
               </div>
             </div>
-            <div className="flex gap-2 items-center">
+            {formData.offer && <div className="flex gap-2 items-center">
               <input
                 onChange={inputHandler}
                 type="number"
                 id="discountedPrice"
                 className="border border-slate-500 rounded-lg p-2"
                 required
+                max={formData.regularPrice - 1}
               />
               <div className="flex flex-col">
                 <span>Discounted Price</span>
-                <span>(₹ / month)</span>
+                <span hidden={formData.type === 'sell'}>(₹ / month)</span>
               </div>
-            </div>
+            </div> }
           </div>
         </div>
         <div className="flex gap-5 flex-col flex-1 p-3">
@@ -236,34 +269,48 @@ export default function CreateListing() {
             />
             <button
               onClick={imageUploadHandler}
-              disabled={loading}
+              disabled={imageUploadLoading}
               type="button"
               className="p-3 rounded-lg border border-green-700 bg-green-500"
             >
-              {loading? 'uploading...': 'Upload'}
+              {imageUploadLoading ? "uploading..." : "Upload"}
             </button>
           </div>
-            {imageUploadError && (
-              <div className="text-red-700">{imageUploadError}</div>
-            )}
+          {imageUploadError && (
+            <div className="text-red-700">{imageUploadError}</div>
+          )}
           <div>
             {formData.imageURLs.length !== 0 &&
               formData.imageURLs.map((url, index) => (
-                <div key={index} className="flex justify-between border p-2 items-center">
+                <div
+                  key={index}
+                  className="flex justify-between border p-2 items-center"
+                >
                   <img
                     src={url}
                     alt="List Image"
                     className="object-contain w-20 h-20"
                   />
-                  <span onClick={() => imageDeleteHandler(index)} className="border rounded-lg p-2 bg-red-700 hover:cursor-pointer">Delete</span>
+                  <span
+                    onClick={() => imageDeleteHandler(index)}
+                    type="button"
+                    className="border rounded-lg p-2 bg-red-700 hover:cursor-pointer"
+                  >
+                    Delete
+                  </span>
                 </div>
               ))}
           </div>
-          <button className="p-3 rounded-xl border uppercase hover:opacity-90 disabled:opacity-70 border-purple-800 bg-purple-700">
-            Create Listing
+          <button
+            disabled={loading}
+            button="submit"
+            className="p-3 rounded-xl border uppercase hover:opacity-90 disabled:opacity-70 border-purple-800 bg-purple-700"
+          >
+            {loading ? "Creating..." : "Create Listing"}
           </button>
         </div>
       </form>
+      <div className="text-center text-red-700">{error &&  error}</div>
     </main>
   );
 }
