@@ -86,6 +86,29 @@ export default function Profile() {
     }
   };
 
+  const deleteListingHandler = async (listingId) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setListings((prevListing) =>
+        prevListing.filter((listing) => listing._id !== listingId)
+      );
+      console.log("Listing Deleted Succesfully");
+    } catch (error) {
+      console.log("Listing Delete Error");
+    }
+  };
+
+  // const updateListingHandler = async (listingId) => {
+  //   navigate
+  // }
+
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
@@ -233,7 +256,8 @@ export default function Profile() {
               Your Listings
             </h1>
             {listings.map((listing, index) => (
-              <div
+              <Link
+                // to={`/listing/${currentUser._id}`}
                 className="flex w-full m-0.5 border-purple-950 border-2 items-center justify-between bg-purple-500"
                 key={index}
               >
@@ -244,15 +268,22 @@ export default function Profile() {
                 ></img>
                 <div className="flex-1 truncate">{listing.description}</div>
                 <div className="flex flex-col">
-                  <button className="text-green-900">Edit</button>
-                  <button className="text-red-700">Delete</button>
+                  <Link to={`/update-listing/${listing._id}`}><button className="text-green-900">Edit</button></Link>
+                  <button
+                    onClick={() => deleteListingHandler(listing._id)}
+                    className="text-red-700"
+                  >
+                    Delete
+                  </button>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
-      {showListingError && <div className="text-center text-red-600">Listing Error Occured</div>}
+      {showListingError && (
+        <div className="text-center text-red-600">Listing Error Occured</div>
+      )}
     </div>
   );
 }
