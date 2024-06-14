@@ -52,6 +52,7 @@ export default function SignUp() {
           placeholder="username"
           type="text"
           id="username"
+          required
           className="my-2 p-3 border rounded-lg"
         />
         <input
@@ -59,6 +60,7 @@ export default function SignUp() {
           placeholder="email"
           type="text"
           id="email"
+          required
           className="my-2 p-3 border rounded-lg"
         />
         <input
@@ -66,6 +68,7 @@ export default function SignUp() {
           placeholder="password"
           type="password"
           id="password"
+          required
           className="my-2 p-3 border rounded-lg"
         />
         <button

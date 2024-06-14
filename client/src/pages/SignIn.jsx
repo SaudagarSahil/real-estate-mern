@@ -55,6 +55,7 @@ export default function SignIn() {
           placeholder="email"
           type="text"
           id="email"
+          required
           className="my-2 p-3 border rounded-lg"
         />
         <input
@@ -62,6 +63,7 @@ export default function SignIn() {
           placeholder="password"
           type="password"
           id="password"
+          required
           className="my-2 p-3 border rounded-lg"
         />
         <button
