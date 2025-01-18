@@ -257,7 +257,7 @@ export default function Profile() {
             </h1>
             {listings.map((listing, index) => (
               <Link
-                // to={`/listing/${currentUser._id}`}
+                to={`/listing/${listing._id}`}
                 className="flex w-full m-0.5 border-purple-950 border-2 items-center justify-between bg-purple-500"
                 key={index}
               >

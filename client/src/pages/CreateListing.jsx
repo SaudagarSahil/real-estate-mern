@@ -145,7 +145,7 @@ export default function CreateListing() {
         setError(data.message);
         return;
       }
-      navigate(`/listing/${currentUser._id}`);
+      navigate(`/listing/${data._id}`);
     } catch (error) {
       setError(error.message);
     }
@@ -302,7 +302,7 @@ export default function CreateListing() {
               ))}
           </div>
           <button
-            disabled={loading}
+            disabled={loading || imageUploadError}
             button="submit"
             className="p-3 rounded-xl border uppercase hover:opacity-90 disabled:opacity-70 border-purple-800 bg-purple-700"
           >
