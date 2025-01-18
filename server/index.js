@@ -12,10 +12,12 @@ app.use(express.json());
 
 app.use(cookieParser());
 
+// console.log("MONGODB STR",process.env.MONGO);
+
 mongoose
   .connect(process.env.MONGO)
-  .then(() => {
-    console.log("Connected to MongoDB");
+  .then((conn) => {
+    console.log("Connected to MongoDB", conn.connection.name);
   })
   .catch((err) => {
     console.log(err);
@@ -32,6 +34,7 @@ app.use('/api/listing', listingRouter);
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
+  console.log(message);
   return res.status(statusCode).json({
     success : false,
     message,
