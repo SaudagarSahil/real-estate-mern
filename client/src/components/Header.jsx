@@ -35,15 +35,15 @@ export default function Header() {
             <span className="text-slate-500">Estate</span>
           </h1>
         </Link>
-        <form onSubmit={handleSubmit} className="bg-slate-100 rounded-lg p-3 flex items">
+        <form onSubmit={handleSubmit} className="bg-slate-100 rounded-lg p-3 flex items w-[22%]">
           <input
             type="text"
-            className="bg-transparent focus:outline-none"
+            className="bg-transparent focus:outline-none w-full"
             placeholder="Search . . . ."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           /> 
-          <button>
+          <button className="flex items-center">
             <FaSearch className="text-slate-600"/>
           </button>
         </form>
@@ -52,7 +52,7 @@ export default function Header() {
             <li className="hidden sm:inline hover:underline">Home</li>
           </Link>
           <Link to="/about">
-            <li className="hidden sm:inline hover:underline">about</li>
+            <li className="hidden sm:inline hover:underline">About</li>
           </Link>
           <Link to="/profile">
             {currentUser ? (
