@@ -26,9 +26,9 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-app.listen(3000, () => {
-  console.log("Server is listening on port 3000");
-});
+// app.listen(3000, () => {
+//   console.log("Server is listening on port 3000");
+// });
 
 app.use('/api/user', userRouter);
 app.use('/api/auth', authRouter);
@@ -50,3 +50,5 @@ app.use((err, req, res, next) => {
     statusCode,
   })
 }) 
+
+export default app;
